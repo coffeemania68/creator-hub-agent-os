@@ -1,0 +1,43 @@
+# Local recovery/audit scratch files
+AGENT_RECOVERY_SCAN.txt
+*_RECOVERY_SCAN.txt
+/*.txt
+CONTEST_HUB_LINK_AUDIT.md
+
+# OS/editor noise
+.DS_Store
+Thumbs.db
+.vscode/
+
+# Temporary exports/backups
+*.tmp
+*.bak
+*.bak-*
+*.backup
+*.backup-*
+backup_hub.*
+run_hub.bat
+
+# Local JSON exports and recovered data snapshots
+creator-hub-*.json
+data/creator-hub-*.json
+
+# Private/local prompt and reference exports
+data/codex_prompts.json
+data/projects.json
+data/recovered_agents_as_prompts.json
+data/remotion_glossary.json
+
+# Legacy standalone app files outside the Vite source tree
+/app.js
+/styles.css
+
+# Frontend build output
+node_modules/
+dist/
+.vite/
+
+# Local environment secrets
+.env
+.env.local
+.env.*.local
