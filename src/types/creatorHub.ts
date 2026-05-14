@@ -40,9 +40,17 @@ export type ArtifactStatus = 'draft' | 'review' | 'approved' | 'archived';
 
 export type ConnectionStatus = 'connected' | 'placeholder' | 'offline';
 
-export type IntegrationStatus = 'connected' | 'disconnected' | 'needs-setup' | 'mock-mode';
+export type IntegrationStatus = 'mock' | 'pending' | 'connected' | 'blocked';
 
-export type IntegrationProvider = 'Google' | 'OpenAI' | 'Perplexity' | 'Claude' | 'YouTube' | 'Naver';
+export type IntegrationProvider =
+  | 'GitHub'
+  | 'Cloudflare Pages'
+  | 'Cloudflare Workers'
+  | 'OpenAI / ChatGPT MCP'
+  | 'Perplexity'
+  | 'Codex / GitHub Issues'
+  | 'Google'
+  | 'Notion';
 
 export type CommandTemplateStatus = 'ready' | 'draft' | 'review';
 
@@ -125,8 +133,8 @@ export type IntegrationService = {
   id: string;
   provider: IntegrationProvider;
   status: IntegrationStatus;
-  authType: 'OAuth' | 'API Key';
-  envVars: string[];
+  connectionType: 'MCP' | 'Backend' | 'GitHub' | 'Cloudflare' | 'Future Connector';
+  handoff: string;
   usageLabel: string;
   note: string;
 };

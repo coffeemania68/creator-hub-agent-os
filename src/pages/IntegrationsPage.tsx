@@ -1,60 +1,44 @@
-import {
-  CheckCircle2,
-  CircleDashed,
-  Cloud,
-  Code2,
-  KeyRound,
-  Link2,
-  LockKeyhole,
-  Settings2,
-  ShieldCheck,
-  Unplug,
-} from 'lucide-react';
+import { CheckCircle2, CircleDashed, Cloud, GitBranch, Link2, LockKeyhole, ShieldCheck, TriangleAlert } from 'lucide-react';
 import { integrationServices } from '../data/mockData';
 import type { IntegrationService, IntegrationStatus } from '../types/creatorHub';
 import { Badge } from '../components/ui/Badge';
 import { Card } from '../components/ui/Card';
 
 const statusLabel: Record<IntegrationStatus, string> = {
+  mock: 'Mock',
+  pending: 'Pending',
   connected: 'Connected',
-  disconnected: 'Disconnected',
-  'needs-setup': 'Needs Setup',
-  'mock-mode': 'Mock Mode',
+  blocked: 'Blocked',
 };
 
 const statusTone: Record<IntegrationStatus, 'active' | 'muted' | 'danger'> = {
+  mock: 'muted',
+  pending: 'muted',
   connected: 'active',
-  disconnected: 'muted',
-  'needs-setup': 'danger',
-  'mock-mode': 'muted',
+  blocked: 'danger',
 };
 
 const statusIcon: Record<IntegrationStatus, typeof CheckCircle2> = {
+  mock: CircleDashed,
+  pending: Link2,
   connected: CheckCircle2,
-  disconnected: Unplug,
-  'needs-setup': Settings2,
-  'mock-mode': CircleDashed,
+  blocked: TriangleAlert,
 };
 
 const providerInitial: Record<IntegrationService['provider'], string> = {
-  Google: 'G',
-  OpenAI: 'AI',
+  GitHub: 'GH',
+  'Cloudflare Pages': 'CP',
+  'Cloudflare Workers': 'CW',
+  'OpenAI / ChatGPT MCP': 'MCP',
   Perplexity: 'PX',
-  Claude: 'CL',
-  YouTube: 'YT',
-  Naver: 'N',
+  'Codex / GitHub Issues': 'CI',
+  Google: 'G',
+  Notion: 'N',
 };
-
-const envGroups = [
-  ['OPENAI_API_KEY', 'PERPLEXITY_API_KEY', 'ANTHROPIC_API_KEY'],
-  ['GOOGLE_CLIENT_ID', 'GOOGLE_CLIENT_SECRET'],
-  ['YOUTUBE_CLIENT_ID', 'YOUTUBE_CLIENT_SECRET'],
-  ['NAVER_CLIENT_ID', 'NAVER_CLIENT_SECRET'],
-];
 
 export function IntegrationsPage() {
   const connectedCount = integrationServices.filter((service) => service.status === 'connected').length;
-  const setupCount = integrationServices.filter((service) => service.status === 'needs-setup').length;
+  const backendOnlyCount = integrationServices.filter((service) => service.connectionType !== 'Future Connector').length;
 
   return (
     <div className="w-full bg-surface-base">
@@ -63,15 +47,15 @@ export function IntegrationsPage() {
           <Card className="p-4">
             <div className="flex flex-wrap items-center justify-between gap-3">
               <div>
-                <p className="text-[11px] font-black uppercase tracking-[0.18em] text-primary">Integration Readiness</p>
-                <h2 className="mt-1 text-xl font-black text-ink">Mock connection setup</h2>
+                <p className="text-[11px] font-black uppercase tracking-[0.18em] text-primary">Integration Status</p>
+                <h2 className="mt-1 text-xl font-black text-ink">MCP-ready connection board</h2>
               </div>
-              <Badge tone="muted">No live auth</Badge>
+              <Badge tone="muted">Backend only</Badge>
             </div>
             <div className="mt-4 grid gap-3 sm:grid-cols-3">
               <StatusMetric label="Services" value={integrationServices.length.toString().padStart(2, '0')} icon={Cloud} />
               <StatusMetric label="Connected" value={connectedCount.toString().padStart(2, '0')} icon={ShieldCheck} />
-              <StatusMetric label="Needs Setup" value={setupCount.toString().padStart(2, '0')} icon={KeyRound} />
+              <StatusMetric label="Backend" value={backendOnlyCount.toString().padStart(2, '0')} icon={LockKeyhole} />
             </div>
           </Card>
 
@@ -82,7 +66,7 @@ export function IntegrationsPage() {
           </section>
         </main>
 
-        <SettingsSidebar />
+        <IntegrationBoundary />
       </div>
     </div>
   );
@@ -90,7 +74,6 @@ export function IntegrationsPage() {
 
 function IntegrationCard({ service }: { service: IntegrationService }) {
   const StatusIcon = statusIcon[service.status];
-  const isConnected = service.status === 'connected';
 
   return (
     <Card className="p-4 transition hover:-translate-y-0.5 hover:shadow-lift">
@@ -101,7 +84,7 @@ function IntegrationCard({ service }: { service: IntegrationService }) {
           </div>
           <div className="min-w-0">
             <h2 className="truncate text-lg font-black text-ink">{service.provider}</h2>
-            <p className="mt-1 text-xs font-bold text-ink-soft">{service.authType}</p>
+            <p className="mt-1 text-xs font-bold text-ink-soft">{service.connectionType}</p>
           </div>
         </div>
         <Badge tone={statusTone[service.status]}>{statusLabel[service.status]}</Badge>
@@ -111,62 +94,47 @@ function IntegrationCard({ service }: { service: IntegrationService }) {
 
       <div className="mt-4 rounded-2xl bg-surface-low p-3">
         <div className="mb-2 flex items-center gap-2 text-[10px] font-black uppercase tracking-[0.14em] text-ink-soft">
-          <Code2 size={14} />
-          Env Keys
+          <GitBranch size={14} />
+          Handoff
         </div>
-        <div className="flex flex-wrap gap-1.5">
-          {service.envVars.map((envVar) => (
-            <span key={envVar} className="rounded-full border border-line/70 bg-white px-2 py-1 text-[10px] font-bold text-ink-muted">
-              {envVar}
-            </span>
-          ))}
-        </div>
+        <p className="text-sm font-bold text-ink">{service.handoff}</p>
       </div>
 
-      <div className="mt-4 flex items-center justify-between gap-3">
-        <div className="flex min-w-0 items-center gap-2 text-xs font-semibold text-ink-soft">
-          <StatusIcon className="shrink-0 text-primary" size={16} />
-          <span className="truncate">{service.note}</span>
-        </div>
-        <button className={`focus-ring shrink-0 rounded-xl px-3 py-2 text-xs font-black ${isConnected ? 'border border-line bg-white text-ink-muted' : 'bg-primary text-white'}`}>
-          {isConnected ? 'Disconnect' : 'Connect'}
-        </button>
+      <div className="mt-4 flex min-w-0 items-center gap-2 text-xs font-semibold text-ink-soft">
+        <StatusIcon className="shrink-0 text-primary" size={16} />
+        <span className="truncate">{service.note}</span>
       </div>
     </Card>
   );
 }
 
-function SettingsSidebar() {
+function IntegrationBoundary() {
   return (
     <aside className="space-y-4 xl:sticky xl:top-4 xl:self-start">
       <Card className="p-4">
         <div className="flex items-center justify-between gap-3">
           <div>
-            <p className="text-[11px] font-black uppercase tracking-[0.16em] text-primary">Environment</p>
-            <h2 className="mt-1 text-lg font-black text-ink">Required keys</h2>
+            <p className="text-[11px] font-black uppercase tracking-[0.16em] text-primary">Secret Boundary</p>
+            <h2 className="mt-1 text-lg font-black text-ink">Secrets are backend-only</h2>
           </div>
           <LockKeyhole className="text-primary" size={22} />
         </div>
 
         <div className="mt-4 space-y-3">
-          {envGroups.map((group) => (
-            <div key={group.join('-')} className="rounded-2xl bg-surface-low p-3">
-              {group.map((envVar) => (
-                <p key={envVar} className="py-0.5 text-xs font-bold text-ink-muted">
-                  {envVar}=
-                </p>
-              ))}
-            </div>
-          ))}
+          <BoundaryRow title="Frontend" body="Shows connection status only. No API key or OAuth secret inputs." />
+          <BoundaryRow title="MCP / Backend" body="Future provider calls, tokens, and approvals live outside the browser." />
+          <BoundaryRow title="GitHub" body="Tasks can become Issues after user approval in a later phase." />
         </div>
       </Card>
 
       <Card className="p-4">
-        <p className="text-[11px] font-black uppercase tracking-[0.16em] text-primary">Auth Boundary</p>
-        <div className="mt-3 space-y-3">
-          <InfoRow icon={KeyRound} title="API Keys" body="Listed only for setup planning. Keys are not stored in the UI." />
-          <InfoRow icon={Link2} title="OAuth" body="Client IDs are placeholders. No login or callback is executed." />
-          <InfoRow icon={ShieldCheck} title="Mock Mode" body="Buttons only describe future connect and disconnect actions." />
+        <p className="text-[11px] font-black uppercase tracking-[0.16em] text-primary">Runtime Flow</p>
+        <div className="mt-3 space-y-2 text-sm font-bold text-ink-muted">
+          <p>ChatGPT</p>
+          <p>MCP / Backend</p>
+          <p>Creator Hub Task</p>
+          <p>GitHub Issue</p>
+          <p>User Approval</p>
         </div>
       </Card>
     </aside>
@@ -185,13 +153,10 @@ function StatusMetric({ label, value, icon: Icon }: { label: string; value: stri
   );
 }
 
-function InfoRow({ icon: Icon, title, body }: { icon: typeof KeyRound; title: string; body: string }) {
+function BoundaryRow({ title, body }: { title: string; body: string }) {
   return (
     <div className="rounded-2xl bg-surface-low p-3">
-      <div className="flex items-center gap-2">
-        <Icon className="text-primary" size={16} />
-        <p className="text-sm font-black text-ink">{title}</p>
-      </div>
+      <p className="text-sm font-black text-ink">{title}</p>
       <p className="mt-1 text-xs leading-5 text-ink-muted">{body}</p>
     </div>
   );

@@ -16,6 +16,7 @@ import { PMWorkspacePage } from '../pages/PMWorkspacePage';
 import { StudioTeamsPage } from '../pages/StudioTeamsPage';
 import { ArtifactsPage } from '../pages/ArtifactsPage';
 import { IntegrationsPage } from '../pages/IntegrationsPage';
+import { SettingsPage } from '../pages/SettingsPage';
 import { WorkflowsPage } from '../pages/WorkflowsPage';
 import { CommandTemplatesPage } from '../pages/CommandTemplatesPage';
 import { ProjectsPage } from '../pages/ProjectsPage';
@@ -107,8 +108,8 @@ export const routes: AppRoute[] = [
     label: 'Integrations',
     shortLabel: 'AI',
     title: 'Integrations',
-    eyebrow: 'Settings Foundation',
-    description: 'ChatGPT, Claude, Gemini, Sora, Remotion, YouTube 등 향후 연결 상태의 placeholder입니다.',
+    eyebrow: 'MCP Connection Board',
+    description: 'Future backend and MCP connection status for GitHub, Cloudflare, OpenAI, Perplexity, and connector handoffs.',
     icon: Cable,
     phase: 'Phase 6',
   },
@@ -118,7 +119,7 @@ export const routes: AppRoute[] = [
     shortLabel: 'More',
     title: 'Settings',
     eyebrow: 'System Preferences',
-    description: '실제 설정 기능은 이후 단계에서 추가하며, Phase 1에서는 라우트 자리만 준비합니다.',
+    description: 'Workspace display, approval, notification, density, and runtime mode settings for the operating shell.',
     icon: Settings,
     phase: 'Phase 6',
   },
@@ -163,8 +164,12 @@ export function renderRoute(route: AppRoute) {
     return <ArtifactsPage />;
   }
 
-  if (route.path === '/connections' || route.path === '/settings') {
+  if (route.path === '/connections') {
     return <IntegrationsPage />;
+  }
+
+  if (route.path === '/settings') {
+    return <SettingsPage />;
   }
 
   return <EmptyPage route={route} />;
